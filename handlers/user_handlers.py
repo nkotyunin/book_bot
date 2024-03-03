@@ -40,3 +40,15 @@ async def process_beggining_command(message: Message):
             "backward", f"1/{len(book)}", "forward"
         ),
     )
+
+
+# This handler process the /continue command and sends the user the page where they left off
+@router.message(Command(commands="continue"))
+async def process_continue_command(message: Message):
+    page_number = users_db[message.from_user.id]["page"]
+    await message.answer(
+        text=book[page_number],
+        reply_markup=create_pagination_keyboard(
+            "backward", f"{page_number}/{len(book)}", "forward"
+        )
+    )
