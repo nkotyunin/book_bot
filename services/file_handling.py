@@ -7,14 +7,25 @@ PAGE_SIZE = 1050
 book: dict[int, str] = {}
 
 
-def _get_part_text(text: str, start: int, page_size: int) -> tuple[str, int]:
-    punctuation = ".,:;!?"
-    end = start + page_size
-    while text[end:][:1] in punctuation:
-        end -= 1
-    text = text[start:end]
-    text = text[: max(map(text.rfind, punctuation)) + 1]
-    return text, len(text)
+def _get_part_text(text: str, start: int, size: int) -> tuple[str, int]:
+    end_signs = ',.!:;?'
+    counter = 0
+    if len(text) < start + size:
+        size = len(text) - start
+        text = text[start:start + size]
+    else:
+        if text[start + size] == '.' and text[start + size - 1] in end_signs:
+            text = text[start:start + size - 2]
+            size -= 2
+        else:
+            text = text[start:start + size]
+        for i in range(size - 1, 0, -1):
+            if text[i] in end_signs:
+                break
+            counter = size - i
+    page_text = text[:size - counter]
+    page_size = size - counter
+    return page_text, page_size
 
 
 def prepare_book(path: str) -> None:
@@ -23,10 +34,10 @@ def prepare_book(path: str) -> None:
         text = file.read()
 
     page_number, start = 1, 0
-    while start != len(text) - 1:
-        part_text, page_size = _get_part_text(text, start, PAGE_SIZE)
-        start += page_size
-        book[page_number] = part_text
+    while start < len(text):
+        part_text, text_length = _get_part_text(text, start, PAGE_SIZE)
+        start += text_length
+        book[page_number] = part_text.strip()
         page_number += 1
 
 
