@@ -32,7 +32,7 @@ async def process_command_help(message: Message):
 
 
 # This handler process the /beggining command and send first page of the book to the user
-@router.message(Command(commands="beggining"))
+@router.message(Command(commands="beginning"))
 async def process_beggining_command(message: Message):
     users_db[message.from_user.id]["page"] = 1
     await message.answer(
