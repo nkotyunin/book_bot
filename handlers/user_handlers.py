@@ -8,6 +8,7 @@ from aiogram.types import Message, CallbackQuery
 from database.database import users_db, user_data_template
 from services.file_handling import book
 from keyboards.pagination_kb import create_pagination_keyboard
+from keyboards.bookmarks_kb import edit_bookmarks_keyboard
 from lexicon.lexicon import LEXICON
 
 logger = logging.getLogger(__name__)
@@ -53,6 +54,18 @@ async def process_continue_command(message: Message):
         ),
     )
 
+# This handler process the /bookmarks command and send list of bookmarks
+@router.message(Command(commands="bookmarks"))
+async def process_bookmarks_command(message: Message):
+    if users_db[message.from_user.id]["bookmarks"]:
+        await message.answer(
+            text=LEXICON[message.text],
+            reply_markup=edit_bookmarks_keyboard(
+                *users_db[message.from_user.id]["bookmarks"]
+            )
+        )
+    else:
+        await message.answer(LEXICON["no_bookmarks"])
 
 # Turn page forward
 @router.callback_query(F.data == "forward")
