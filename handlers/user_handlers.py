@@ -2,9 +2,9 @@ import logging
 
 from copy import deepcopy
 
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.filters import Command, CommandStart
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 from database.database import users_db, user_data_template
 from services.file_handling import book
 from keyboards.pagination_kb import create_pagination_keyboard
@@ -50,5 +50,37 @@ async def process_continue_command(message: Message):
         text=book[page_number],
         reply_markup=create_pagination_keyboard(
             "backward", f"{page_number}/{len(book)}", "forward"
-        )
+        ),
     )
+
+
+# Turn page forward
+@router.callback_query(F.data == "forward")
+async def process_forward_page(callback: CallbackQuery):
+    if users_db[callback.from_user.id]["page"] < len(book):
+        users_db[callback.from_user.id]["page"] += 1
+        await callback.message.edit_text(
+            text=book[users_db[callback.from_user.id]["page"]],
+            reply_markup=create_pagination_keyboard(
+                "backward", 
+                f"{users_db[callback.from_user.id]["page"]}/{len(book)}", 
+                "forward"
+            ),
+        )
+    await callback.answer()
+
+
+# Turn page backward
+@router.callback_query(F.data == "backward")
+async def process_backward_page(callback: CallbackQuery):
+    if users_db[callback.from_user.id]["page"] > 1:
+        users_db[callback.from_user.id]["page"] -= 1
+        await callback.message.edit_text(
+            text=book[users_db[callback.from_user.id]["page"]],
+            reply_markup=create_pagination_keyboard(
+                "backward",
+                f"{users_db[callback.from_user.id]["page"]}/{len(book)}",
+                "forward"
+            )
+        )
+    await callback.answer()
