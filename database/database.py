@@ -3,4 +3,4 @@ user_data_template = {
     "bookmarks": set()
 }
 
-user_db: dict[int, str] = {}
+users_db: dict[int, str] = {}
